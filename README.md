@@ -5,7 +5,7 @@ This is the project page of the paper:
 Guillaume Baldi, [Rémi Allègre](https://igg.icube.unistra.fr/index.php/R%C3%A9mi_All%C3%A8gre), [Jean-Michel Dischler](https://dpt-info.di.unistra.fr/~dischler/). **Differentiable Point Process Texture Basis Functions for inverse procedural modeling of cellular stochastic structures**, Computers & Graphics,
 Volume 112, 2023, Pages 116-131, ISSN 0097-8493, https://doi.org/10.1016/j.cag.2023.04.004.
 
-You can get the paper (preprint) following [this link](https://seafile.unistra.fr/f/8b443ea6124c4d839ef5/).
+You can get the paper (preprint) following [this link](https://seafile.unistra.fr/f/8b443ea6124c4d839ef5/?dl=1).
 
 <!---
 ### C-PPTBF parameters
