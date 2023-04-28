@@ -1,0 +1,7 @@
+jax==0.4.1
+matplotlib==3.5.2
+numpy==1.23.4
+optax==0.1.4
+Pillow==9.5.0
+pyopencl==2022.1.4
+scipy==1.5.2
