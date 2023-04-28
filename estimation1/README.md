@@ -26,7 +26,7 @@ python predict.py --input image.png
 ```
 
 `image.png` is the reconstructed C-PPTBF image for which we want to estimate the C-PPTBF parameters.   
-It will output a txt file with the parameters in the format : `tiling jittering zoom alpha normBlend wsmooth winfeat aniso sigcos delta larp`
+It will output a txt file with the parameters in this order : `tiling type, jittering, zoom, alpha, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp`
 
 To run the prediction with our pre-trained model, download on [[link](https://seafile.unistra.fr/d/4c57922791fc406581f3/)] `complete_withoutAlpha.h5` and `alpha.h5` and put them in current directory.
 
