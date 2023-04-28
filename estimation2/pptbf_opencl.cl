@@ -1,3 +1,12 @@
+/*
+Guillaume Baldi, Rémi Allègre, Jean-Michel Dischler.
+Differentiable Point Process Texture Basis Functions for inverse
+procedural modeling of cellular stochastic structures,
+Computers & Graphics, Volume 112, 2023, Pages 116-131,
+ISSN 0097-8493, https://doi.org/10.1016/j.cag.2023.04.004.
+LGPL-2.1 license
+*/
+
 #include "noise.h"
 
 ////////////////////////////////////////////////////////////////////////////////

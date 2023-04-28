@@ -1,3 +1,12 @@
+'''
+Guillaume Baldi, Rémi Allègre, Jean-Michel Dischler.
+Differentiable Point Process Texture Basis Functions for inverse
+procedural modeling of cellular stochastic structures,
+Computers & Graphics, Volume 112, 2023, Pages 116-131,
+ISSN 0097-8493, https://doi.org/10.1016/j.cag.2023.04.004.
+LGPL-2.1 license
+'''
+
 import time
 import numpy as np
 import pyopencl as cl
@@ -56,8 +65,6 @@ def cl_pptbf_0(im_size, tx, ty, zoom, alpha, tt):
 					map[d] = {'ix': count, 'data':p[i,j,k]}
 					count += 1
 
-	#print("Feature points map length:", count)
-
 	# Array of unique feature points
 	p = np.zeros((len(map),6), dtype=np.float32)
 	for key in map:
@@ -68,3 +75,22 @@ def cl_pptbf_0(im_size, tx, ty, zoom, alpha, tt):
 	fbm = np.reshape(fbm, (im_size * im_size * 2))
 
 	return p, npp, fbm
+
+# Complete PPTBF pass to generate PPTBF images
+def cl_pptbf(im_size, tx, ty, rescalex, rescaley, zoom, alpha, tt,
+jitter, arity, ismooth, wsmooth, normblend, normsig, larp, normfeat,
+winfeatcorrel, feataniso, sigcos, deltaorient, amp, rx ,ry):
+	
+	knl = prg.pptbf
+	image_np = np.zeros((im_size, im_size), dtype=np.float32)
+	image_g = cl.Buffer(ctx, mf.WRITE_ONLY, image_np.nbytes)
+	knl(queue, image_np.shape, None, np.int32(im_size), np.float32(tx), np.float32(ty),
+	np.float32(zoom), np.float32(alpha), np.int32(tt), np.float32(jitter), np.float32(arity),
+	np.float32(ismooth), np.float32(wsmooth), np.float32(normblend), np.float32(normsig),
+	np.float32(larp), np.float32(normfeat), np.float32(winfeatcorrel), np.float32(feataniso),
+	np.float32(sigcos), np.float32(deltaorient), np.float32(amp), np.float32(rx), np.float32(ry),
+	image_g)
+	
+	cl.enqueue_copy(queue, image_np, image_g)
+	
+	return image_np

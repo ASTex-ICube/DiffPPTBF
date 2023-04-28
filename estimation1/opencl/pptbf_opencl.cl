@@ -1,3 +1,12 @@
+/*
+Guillaume Baldi, Rémi Allègre, Jean-Michel Dischler.
+Differentiable Point Process Texture Basis Functions for inverse
+procedural modeling of cellular stochastic structures,
+Computers & Graphics, Volume 112, 2023, Pages 116-131,
+ISSN 0097-8493, https://doi.org/10.1016/j.cag.2023.04.004.
+LGPL-2.1 license
+*/
+
 #include "opencl/noise.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -24,9 +33,6 @@
 
 uint g_PRNG_seed;
 
-//------------------------------------------------------------------------------
-// phi
-//------------------------------------------------------------------------------
 int phi(int x) {
   if (x < 0) {
     x = x + 10 * MAX_NOISE_RAND;
@@ -35,9 +41,6 @@ int phi(int x) {
   return noise[x];
 }
 
-//------------------------------------------------------------------------------
-// seeding
-//------------------------------------------------------------------------------
 void seeding(uint x, uint y, uint z) {
   g_PRNG_seed =
       (uint)(phi((int)x + phi((int)y + phi((int)z))) % (int)(1 << 15) +
@@ -46,9 +49,6 @@ void seeding(uint x, uint y, uint z) {
                  (int)(1 << 15));
 }
 
-//------------------------------------------------------------------------------
-// next
-//------------------------------------------------------------------------------
 float next() {
   g_PRNG_seed *= 3039177861u;
   float res = ((float)g_PRNG_seed / (float)4294967296.0f) * 2.0f - 1.0f;
@@ -56,8 +56,9 @@ float next() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Perlin noise
+// PERLIN NOISE
 ////////////////////////////////////////////////////////////////////////////////
+
 float2 inoiseG(int ix, int iy) {
   int index = (phi(ix) + 3 * phi(iy)) % MAX_NOISE_RAND;
   return G[index];
@@ -91,9 +92,6 @@ float cnoise2DG(float x, float y) {
 // POINT PROCESS
 ////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------
-// PP_pave
-//------------------------------------------------------------------------------
 void PP_pave(
     // position
     float xp, float yp,
@@ -135,9 +133,6 @@ void PP_pave(
   }
 }
 
-//------------------------------------------------------------------------------
-// PP_paved
-//------------------------------------------------------------------------------
 void PP_paved(float x, float y,
               // pavement parameters
               int Nx, float *cx, float *cy, float *dx, float *dy) {
@@ -229,9 +224,6 @@ void PP_paved(float x, float y,
   }
 }
 
-//------------------------------------------------------------------------------
-// PP_paveb
-//------------------------------------------------------------------------------
 void PP_paveb(
     // position
     float x, float y,
@@ -351,9 +343,6 @@ void PP_paveb(
   return;
 }
 
-//------------------------------------------------------------------------------
-// PP_pavement
-//------------------------------------------------------------------------------
 void PP_pavement(float x, float y, int tt, int decalx, int Nx, float correction,
                  float *ccx, float *ccy, float *cdx, float *cdy) {
 
@@ -388,9 +377,6 @@ void PP_pavement(float x, float y, int tt, int decalx, int Nx, float correction,
   }
 }
 
-//------------------------------------------------------------------------------
-// PP_pointset
-//------------------------------------------------------------------------------
 int PP_pointset(
     // point set parameters
     float psubx, float psuby, float jitx, float jity, float *ccx, float *ccy,
@@ -553,10 +539,252 @@ int PP_pointset(
   return nc;
 }
 
-//------------------------------------------------------------------------------
-// PP_distribute
-//------------------------------------------------------------------------------
 int PP_distribute(
+    // position
+    float px, float py,
+    // point set parameters
+    int tt, float psubx, float psuby, int decalx, int Nx, float correction,
+    float *cx, float *cy, float *ncx, float *ncy, float *ndx,
+    float *ndy) {
+
+  float ccx[9];
+  float ccy[9];
+  float cdx[9];
+  float cdy[9];
+
+  PP_pavement(px, py, tt, decalx, Nx, correction, ccx, ccy, cdx, cdy);
+
+  int np = PP_pointset(psubx, psuby, 0.9, 0.9, ccx, ccy, cdx, cdy, cx, cy, ncx,
+                       ncy, ndx, ndy);
+
+  // No jitter for pptbf_0
+  /*for (int i = 0; i < np; i++) {
+    cx[i] = cx[i] * jitter + ncx[i] * (1.0f - jitter);
+    cy[i] = cy[i] * jitter + ncy[i] * (1.0f - jitter);
+  }*/
+
+  return np;
+}
+
+int PP_genPointSet(
+    // position
+    float x, float y,
+    // point set parameters
+    int pointsettype, float *px, float *py, float *ncx,
+    float *ncy, float *ndx, float *ndy) {
+
+  int tt;
+  float ppointsub;
+  int decalx;
+  int Nx;
+
+  float correction = 0.0f;
+
+  switch (pointsettype) {
+  case 0:
+    tt = PP_tilingType_REGULAR;
+    ppointsub = 0.0f;
+    decalx = 1;
+    Nx = 0;
+    break;
+
+  case 1:
+    tt = PP_tilingType_REGULAR;
+    ppointsub = 0.5f;
+    decalx = 1;
+    Nx = 0;
+    break;
+
+  case 2:
+    tt = PP_tilingType_REGULAR;
+    ppointsub = 0.0f;
+    decalx = 2;
+    Nx = 0;
+    correction = 0.25f;
+    break;
+
+  case 3:
+    tt = PP_tilingType_REGULAR;
+    ppointsub = 0.0f;
+    decalx = 3;
+    Nx = 0;
+    correction = 0.25f;
+    break;
+
+  case 4:
+    tt = PP_tilingType_IRREGULAR;
+    ppointsub = 0.0f;
+    decalx = 1;
+    Nx = 0;
+    break;
+
+  case 5:
+    tt = PP_tilingType_IRREGULAR;
+    ppointsub = 0.5f;
+    decalx = 1;
+    Nx = 0;
+    break;
+
+  case 6:
+    tt = PP_tilingType_IRREGULARX;
+    ppointsub = 0.0f;
+    decalx = 1;
+    Nx = 0;
+    break;
+
+  case 7:
+    tt = PP_tilingType_IRREGULARX;
+    ppointsub = 0.5f;
+    decalx = 1;
+    Nx = 0;
+    break;
+
+  case 8:
+    tt = PP_tilingType_CROSS;
+    ppointsub = 0.0f;
+    decalx = 0;
+    Nx = 2;
+    break;
+
+  case 9:
+    tt = PP_tilingType_CROSS;
+    ppointsub = 0.5f;
+    decalx = 0;
+    Nx = 2;
+    break;
+
+  case 10:
+    tt = PP_tilingType_CROSS;
+    ppointsub = 0.0f;
+    decalx = 0;
+    Nx = 3;
+    break;
+
+  case 11:
+    tt = PP_tilingType_CROSS;
+    ppointsub = 0.5f;
+    decalx = 0;
+    Nx = 3;
+    break;
+
+  case 12:
+    tt = PP_tilingType_BISQUARE;
+    ppointsub = 0.0f;
+    decalx = 0;
+    Nx = 1;
+    break;
+
+  case 13:
+    tt = PP_tilingType_BISQUARE;
+    ppointsub = 0.5f;
+    decalx = 0;
+    Nx = 1;
+    break;
+
+  default:
+    tt = PP_tilingType_REGULAR;
+    ppointsub = 0.0f;
+    decalx = 1;
+    Nx = 0;
+    break;
+  }
+
+  // Compute points
+  return PP_distribute(x, y, tt, ppointsub, ppointsub, decalx, Nx, correction,
+                       px, py, ncx, ncy, ndx, ndy);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// C-PPTBF computing only the feature points
+////////////////////////////////////////////////////////////////////////////////
+
+void procedural_pptbf_0(float xx, float yy, float tx, float ty, float zoom,
+                        float alpha, int tt, int i, int j, int size,
+                        float *p, int *npp, float *fbm) {
+  
+  float pptbf = 0.0f;
+
+  // Translation
+
+  float ppx = xx + tx;
+  float ppy = yy + ty;
+
+  // Deformation
+
+  float rx = 2.0f;
+  float ry = 5.0f;
+
+  fbm[2 * (i * size + j)    ] = (cnoise2DG(ppx * zoom * 0.5f + rx, ppy * zoom * 0.5f) +
+  0.5f * cnoise2DG(ppx * zoom + rx, ppy * zoom) +
+  0.25f * cnoise2DG(ppx * zoom * 2.0f + rx, ppy * zoom * 2.0f) +
+  0.125f * cnoise2DG(ppx * zoom * 4.0f + rx, ppy * zoom * 4.0f));
+
+  fbm[2 * (i * size + j) + 1] = (cnoise2DG(ppx * zoom * 0.5f, ppy * zoom * 0.5f + ry) +
+  0.5f * cnoise2DG(ppx * zoom, ppy * zoom + ry) +
+  0.25f * cnoise2DG(ppx * zoom * 2.0f, ppy * zoom * 2.0f + ry) +
+  0.125f * cnoise2DG(ppx * zoom * 4.0f, ppy * zoom * 4.0f + ry));
+
+  // Model Transform
+
+  // Note: +100.0f is required to avoir negative coordinates for the PRNG!
+  float x = 100.0f + (ppx * cos(-alpha) + ppy * sin(-alpha)) * zoom;
+  float y = 100.0f + (-ppx * sin(-alpha) + ppy * cos(-alpha)) * zoom;
+
+  //  Point Process
+
+  // Feature points locations with jittering
+  float px[36];
+  float py[36];
+
+  // Feature points locations without jittering (i.e.tile centers)
+  float ncx[36];
+  float ncy[36];
+
+  // Distance to cell borders
+  float ndx[36];
+  float ndy[36];
+
+  int nc = PP_genPointSet(x, y, tt, px, py, ncx, ncy, ndx, ndy);
+
+  // Maximum number of closest neighbors
+  int npp1 = (nc < PP_nbMaxNeighbors ? nc : PP_nbMaxNeighbors);
+
+  // Doesn't work
+  // for (int k = 0; k < npp1; k++) {
+  // Works
+  for (int k = 0; k < 36; k++) {
+    p[6 * (36 * (i * size + j) + k) + 0] = px[k];
+    p[6 * (36 * (i * size + j) + k) + 1] = py[k];
+    p[6 * (36 * (i * size + j) + k) + 2] = ncx[k];
+    p[6 * (36 * (i * size + j) + k) + 3] = ncy[k];
+    p[6 * (36 * (i * size + j) + k) + 4] = ndx[k];
+    p[6 * (36 * (i * size + j) + k) + 5] = ndy[k];
+  }
+
+  npp[i * size + j] = npp1;
+}
+
+__kernel void pptbf_0(const uint size, float tx, float ty, float zoom,
+                      float alpha, int tt,
+                      __global __write_only float *p,
+                      __global __write_only int *npp,
+                      __global __write_only float *fbm) {
+
+  int i = get_global_id(0);
+  int j = get_global_id(1);
+
+  float x = (float)j / (float)size;
+  float y = (float)i / (float)size;
+
+  procedural_pptbf_0(x, y, tx, ty, zoom, alpha, tt,
+                     i, j, size, p, npp, fbm);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Complete C-PPTBF additional functions
+////////////////////////////////////////////////////////////////////////////////
+
+int PP_distributeJitter(
     // position
     float px, float py,
     // point set parameters
@@ -582,10 +810,7 @@ int PP_distribute(
   return np;
 }
 
-//------------------------------------------------------------------------------
-// PP_genPointSet
-//------------------------------------------------------------------------------
-int PP_genPointSet(
+int PP_genPointSetJitter(
     // position
     float x, float y,
     // point set parameters
@@ -709,13 +934,9 @@ int PP_genPointSet(
   }
 
   // Compute points
-  return PP_distribute(x, y, tt, ppointsub, ppointsub, decalx, Nx, correction,
+  return PP_distributeJitter(x, y, tt, ppointsub, ppointsub, decalx, Nx, correction,
                        jitter, px, py, ncx, ncy, ndx, ndy);
 }
-
-//------------------------------------------------------------------------------
-// PP_cdistance
-//------------------------------------------------------------------------------
 
 float PP_cdistance( float x1, float y1, float x2, float y2, float norm, 
 float cx, float cy, float dx, float dy, float larp )
@@ -726,10 +947,6 @@ float cx, float cy, float dx, float dy, float larp )
 	float ey = ddy < 0.0f ? (-ddy) / ( y2 - cy + dy ) : ddy / ( cy + dy - y2 );
 	return ((1.0f-larp)*pow(pow(fabs(ddx), norm) + pow(fabs(ddy), norm), 1.0f / norm)+larp*(ex > ey ? ex : ey));
 }
-
-//------------------------------------------------------------------------------
-// PP_nthclosest
-//------------------------------------------------------------------------------
 
 void PP_nthclosest(int *mink, int nn, float xx, float yy, float *cx, float *cy,
                    int nc, float *ncx, float *ncy, float *dx, float *dy, float larp) {
@@ -753,15 +970,11 @@ void PP_nthclosest(int *mink, int nn, float xx, float yy, float *cx, float *cy,
   }
 
   // Pad the remaining of the mink array with -1
-  // (required for jax procedural_pptbf_2 function)
   for (i = nn; i < 36; i++) {
     mink[i] = -1;
   }
 }
 
-//------------------------------------------------------------------------------
-// interTriangle
-//------------------------------------------------------------------------------
 float interTriangle(float origx, float origy, float ddx, float ddy,
                     float startx, float starty, float endx, float endy) {
 
@@ -778,9 +991,6 @@ float interTriangle(float origx, float origy, float ddx, float ddy,
   return lambda;
 }
 
-//------------------------------------------------------------------------------
-// bezier2
-//------------------------------------------------------------------------------
 float2 bezier2(float ts, float p0x, float p0y, float p1x, float p1y, float p2x,
                float p2y) {
 
@@ -794,33 +1004,6 @@ float2 bezier2(float ts, float p0x, float p0y, float p1x, float p1y, float p2x,
 
   return spline;
 }
-
-float intersectRays(float2 P, float2 r, float2 Q, float2 s) {
-  //# Ray1 = P + lambda1 * r
-  //# Ray2 = Q + lambda2 * s
-  //# r and s must be normalized (length = 1)
-  //# Returns intersection point along Ray1
-  //# Returns null if lines do not intersect or are identical
-
-  float PQx = Q.x - P.x;
-  float PQy = Q.y - P.y;
-  float rxt = -r.y;
-  float ryt = r.x;
-  float qx = PQx * r.x + PQy * r.y;
-  float qy = PQx * rxt + PQy * ryt;
-  float ssx = s.x * r.x + s.y * r.y;
-  float ssy = s.x * rxt + s.y * ryt;
-  // If rays are identical or do not cross
-  if (ssy == 0.0f)
-    return NAN;
-
-  float a = qx - qy * ssx / ssy;
-  return a;
-}
-
-//------------------------------------------------------------------------------
-// celldist
-//------------------------------------------------------------------------------
 
 int cclosest( float xx, float yy, float cx[9 * 4], float cy[9 * 4], int nc, 
 float cnx[9 * 4], float cny[9 * 4], float dx[9 * 4], float dy[9 * 4], float larp )
@@ -876,10 +1059,6 @@ float cnx[9 * 4], float cny[9 * 4], float dx[9 * 4], float dy[9 * 4], float larp
 	return sqrt(vdx*vdx + vdy*vdy);
 }
 
-//------------------------------------------------------------------------------
-// PPTBF
-//------------------------------------------------------------------------------
-
 float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
                        float alpha, int tt, float jitter, float arity,
                        int ismooth, float wsmooth, float normblend,
@@ -906,7 +1085,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
         amp * 0.25f * cnoise2DG(ppx * zoom * 2.0f, ppy * zoom * 2.0f + ry) +
         amp * 0.125f * cnoise2DG(ppx * zoom * 4.0f, ppy * zoom * 4.0f + ry);
 
-
   // Model Transform
 
   // Note: +100.0 is required to avoir negative coordinates for the PRNG!
@@ -930,27 +1108,12 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
   // Closest neighbors indices
   int mink[36];
 
-  // Delaunay edges
-  //bool delaunay[36];
-
-  int nc = PP_genPointSet(x, y, tt, jitter, px, py, ncx, ncy, ndx, ndy);
+  int nc = PP_genPointSetJitter(x, y, tt, jitter, px, py, ncx, ncy, ndx, ndy);
 
   // Maximum number of closest neighbors
   int npp = (nc < PP_nbMaxNeighbors ? nc : PP_nbMaxNeighbors);
 
-  // Code adapted for norm = 2
-  // For other norms, see:
-  // Two - Dimensional Voronoi Diagrams in the Lp - Metric
-  // https: //
-  // www.semanticscholar.org/paper/Two-Dimensional-Voronoi-Diagrams-in-the-Lp-Metric-Lee/ff282c65cf3c5cd0f0d87523d9f83ecae6510fcc
-
-  // Compute the table of npp closest feature points from(x, y)
-  // Note : the max value of npp is typically set to 18 which may be less than
-  // nc (nc may reach 30 e.g.with tiling type 1)
-
   PP_nthclosest(mink, npp, x, y, px, py, nc, ncx, ncy, ndx, ndy, larp);
-  
-  //PP_delaunay(npp, x, y, mink, px, py, delaunay);
 
   // PPTBF = PP x ( W F )
 
@@ -971,14 +1134,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
 
     // Distance to current feature point
     float sdd = sqrt(ddx * ddx + ddy * ddy);
-
-    /*
-    // Uncomment to display the point set
-    if (sdd < 0.01)
-      return 1.0;
-    else
-      return 0.0;
-    */
 
     float gauss = 1.0f;
     float footprint = 1.0f;
@@ -1009,7 +1164,7 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
 
       // ---- Begin smoothing ----
 
-      float celldd0 = celldist( x, y, mink[k], mink[0], px, py, nc, ncx, ncy, ndx, ndy, larp );
+      float celldd0 = celldist(x, y, mink[k], mink[0], px, py, nc, ncx, ncy, ndx, ndy, larp);
 
       ddx /= sdd;
       ddy /= sdd;
@@ -1114,9 +1269,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
       }
     }
 
-    // For smoothing debugging
-    //return cv;
-
     float coeff1 = normblend *
                    (exp((cv - 1.0f) * normsig) - exp(-1.0f * normsig)) /
                    (1.0f - exp(-1.0f * normsig));
@@ -1129,7 +1281,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
     float feat = 0.0f;
 
     {
-      // Gabor
       seeding((uint)(px[mink[k]] * 15.0f + 2.0f),
               (uint)(py[mink[k]] * 15.0f + 5.0f), 0u);
 

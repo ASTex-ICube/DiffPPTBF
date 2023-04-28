@@ -1,19 +1,24 @@
+'''
+Guillaume Baldi, Rémi Allègre, Jean-Michel Dischler.
+Differentiable Point Process Texture Basis Functions for inverse
+procedural modeling of cellular stochastic structures,
+Computers & Graphics, Volume 112, 2023, Pages 116-131,
+ISSN 0097-8493, https://doi.org/10.1016/j.cag.2023.04.004.
+LGPL-2.1 license
+'''
+
+import time
+import random
+from PIL import Image
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
-
-import random
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
-import time
-from PIL import Image
-
-import time
-
-from opencl.pptbf_opencl_smoothing import cl_pptbf
-
 from sklearn.preprocessing import OneHotEncoder
+
+from opencl.pptbf_opencl import cl_pptbf
 
 encoder = OneHotEncoder(categories='auto')
 
@@ -85,9 +90,9 @@ def generate_new_image(count):
     rescalex = a[count]
     rescaley = b[count]
 
-    target_image = cl_pptbf(tx, ty, rescalex, rescaley, zoom, alpha,
-                        tiling, jitter, arity, ismooth, wsmooth, normblend, normsig,
-                        larp, normfeat, winfeatcorrel, feataniso, sigcos, deltaorient, amp, rx, ry)
+    target_image = cl_pptbf(size, tx, ty, rescalex, rescaley, zoom, alpha,
+    tiling, jitter, arity, ismooth, wsmooth, normblend, normsig,
+    larp, normfeat, winfeatcorrel, feataniso, sigcos, deltaorient, amp, rx, ry)
     
     min = np.min(target_image)
     max = np.max(target_image)

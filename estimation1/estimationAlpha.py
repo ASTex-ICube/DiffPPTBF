@@ -1,17 +1,22 @@
+'''
+Guillaume Baldi, Rémi Allègre, Jean-Michel Dischler.
+Differentiable Point Process Texture Basis Functions for inverse
+procedural modeling of cellular stochastic structures,
+Computers & Graphics, Volume 112, 2023, Pages 116-131,
+ISSN 0097-8493, https://doi.org/10.1016/j.cag.2023.04.004.
+LGPL-2.1 license
+'''
+
+import time
+import random
+from PIL import Image
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
-
-import random
 from tensorflow.keras.optimizers import Adam
-import time
-from PIL import Image
-
-import time
 
 from opencl.pptbf_opencl_smoothing import cl_pptbf
-
 
 def normalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
