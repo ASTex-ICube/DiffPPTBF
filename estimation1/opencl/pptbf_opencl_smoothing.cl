@@ -818,119 +818,6 @@ float intersectRays(float2 P, float2 r, float2 Q, float2 s) {
   return a;
 }
 
-/*
-//------------------------------------------------------------------------------
-// celldist (NO LARP)
-//------------------------------------------------------------------------------
-
-float2 circumcenter(float ax, float ay, float bx, float by, float cx,
-                    float cy) {
-
-  float d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
-  float ux =
-      ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) +
-       (cx * cx + cy * cy) * (ay - by)) /
-      d;
-  float uy =
-      ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) +
-       (cx * cx + cy * cy) * (bx - ax)) /
-      d;
-  return (float2)(ux, uy);
-}
-
-bool isDelaunay(int i, int *mink, float *cx, float *cy, int nc) {
-  bool delaunay = true;
-  // Check if Gabriel
-  // Edge middle and length
-  float midX = 0.5f * (cx[mink[0]] + cx[mink[i]]);
-  float midY = 0.5f * (cy[mink[0]] + cy[mink[i]]);
-  float dx = cx[mink[i]] - cx[mink[0]];
-  float dy = cy[mink[i]] - cy[mink[0]];
-  float radg = 0.25 * (dx * dx + dy * dy);
-  // Only the feature points at a distance that is less than
-  // the distance to the i - th feature point have to be checked
-  int k = 1;
-  while (k < i && delaunay) {
-    dx = cx[mink[k]] - midX;
-    dy = cy[mink[k]] - midY;
-    float dist = dx * dx + dy * dy;
-    if (dist < radg) {
-      // Not Gabriel : check if Delaunay
-      // Triangle circumcenter and radius
-      float2 u = circumcenter(cx[mink[0]], cy[mink[0]], cx[mink[i]],
-                              cy[mink[i]], cx[mink[k]], cy[mink[k]]);
-      dx = cx[mink[k]] - u.x;
-      dy = cy[mink[k]] - u.y;
-      float radd = dx * dx + dy * dy;
-      // Delaunay test : all the feature points have to
-      // be tested for empty disk
-      for (int l = 1; l < nc; l++) {
-        if (l != i && l != k) {
-          dx = cx[mink[l]] - u.x;
-          dy = cy[mink[l]] - u.y;
-          dist = dx * dx + dy * dy;
-          if (dist < radd) {
-            delaunay = false;
-            break;
-          }
-        }
-      }
-    }
-    k++;
-  }
-  return delaunay;
-}
-
-void PP_delaunay(int nc, float x, float y, int *mink, float *cx, float *cy,
-                 bool *delaunay) {
-  for (int i = 1; i < nc; i++) {
-    delaunay[i] = isDelaunay(i, mink, cx, cy, nc);
-  }
-}
-
-float celldist(float ixx, float iyy, int *mink, bool *delaunay, float *cx,
-               float *cy, int nc) {
-  // Compute closest feature point for (ixx, iyy)
-  float2 closest1 = (float2)(cx[mink[0]], cy[mink[0]]);
-
-  // Ray from closest1 to(ixx, iyy)
-  float2 dir = (float2)(ixx - closest1.x, iyy - closest1.y);
-  float2 dirNorm = normalize(dir);
-
-  float minDist = 10000.0f;
-  float2 closest2;
-  float2 dirBisec, dirBisecNorm;
-  float2 mid;
-  float2 dirEdgeNorm;
-  float a;
-
-  for (int i = 1; i < nc; i++) {
-    closest2 = (float2)(cx[mink[i]], cy[mink[i]]);
-
-    // Edge betwen closest1 and closest2
-    dirBisec = closest2 - closest1;
-
-    // If closest 2 is in the good half plane
-    if (dot(dirNorm, dirBisec) >= 0.0f) {
-      if (delaunay[i]) {
-
-        mid = 0.5f * (closest1 + closest2);
-        dirBisecNorm = normalize(dirBisec);
-        dirEdgeNorm = (float2)(-dirBisecNorm.y, dirBisecNorm.x);
-
-        a = intersectRays(closest1, dirNorm, mid, dirEdgeNorm);
-
-        if (a < minDist) {
-          minDist = a;
-        }
-      }
-    }
-  }
-
-  return minDist;
-}
-*/
-
 //------------------------------------------------------------------------------
 // celldist
 //------------------------------------------------------------------------------
@@ -1019,20 +906,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
         amp * 0.25f * cnoise2DG(ppx * zoom * 2.0f, ppy * zoom * 2.0f + ry) +
         amp * 0.125f * cnoise2DG(ppx * zoom * 4.0f, ppy * zoom * 4.0f + ry);
 
-  /*float freq = 3.0f;
-
-  ppx = ppx +
-        amp * 0.25f *
-            cnoise2DG(ppx * zoom * freq * 4.0f + rx, ppy * zoom * freq * 4.0f) +
-        amp * 0.125f *
-            cnoise2DG(ppx * zoom * freq * 8.0f + rx, ppy * zoom * freq * 8.0f);
-
-  ppy = ppy +
-        amp * 0.25f *
-            cnoise2DG(ppx * zoom * freq * 2.0f, ppy * zoom * freq * 4.0f + ry) +
-        amp * 0.125f *
-            cnoise2DG(ppx * zoom * freq * 8.0f, ppy * zoom * freq * 8.0f +
-  ry);*/
 
   // Model Transform
 
@@ -1088,9 +961,7 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
     seeding((uint)(px[mink[k]] * 12.0f + 7.0f),
             (uint)(py[mink[k]] * 12.0f + 1.0f), 0u);
 
-    //float dalpha = 2.0f * M_PI_F / pow(2.0f, (float)((uint)(arity + 0.5f)));
     float dalpha = 2.0 * M_PI_F / 8.0;
-    //float rotalpha = dalpha * (next() * 0.5f + 0.5f);
     float rotalpha = dalpha * 0.5f;
 
     // Window Function: W
@@ -1151,7 +1022,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
       
       float ptx = px[mink[0]] + 0.1f * cos(dalpha * (float)(ka) + rotalpha);
       float pty = py[mink[0]] + 0.1f * sin(dalpha * (float)(ka) + rotalpha);
-      //float celldd1 = celldist(ptx, pty, mink, delaunay, px, py, npp);
       float celldd1 = celldist(ptx, pty, mink[k], mink[0], px, py, nc, ncx, ncy, ndx, ndy, larp);
       float startx =
           px[mink[0]] + celldd1 * cos(dalpha * (float)(ka) + rotalpha);
@@ -1160,7 +1030,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
       
       ptx = px[mink[0]] + 0.1f * cos(dalpha * (float)(ka) + dalpha + rotalpha);
       pty = py[mink[0]] + 0.1f * sin(dalpha * (float)(ka) + dalpha + rotalpha);
-      //float celldd2 = celldist(ptx, pty, mink, delaunay, px, py, npp);
       float celldd2 = celldist(ptx, pty, mink[k], mink[0], px, py, nc, ncx, ncy, ndx, ndy, larp);
       float endx =
           px[mink[0]] + celldd2 * cos(dalpha * (float)(ka) + dalpha + rotalpha);
@@ -1180,7 +1049,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
               0.1f * cos(dalpha * (float)(ka) + 2.0f * dalpha + rotalpha);
         pty = py[mink[0]] +
               0.1f * sin(dalpha * (float)(ka) + 2.0f * dalpha + rotalpha);
-        //float celldd = celldist(ptx, pty, mink, delaunay, px, py, npp);
         float celldd = celldist(ptx, pty, mink[k], mink[0], px, py, nc, ncx, ncy, ndx, ndy, larp);
 
         float nendx = px[mink[0]] + celldd * cos(dalpha * (float)(ka) +
@@ -1206,7 +1074,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
       } else {
         ptx = px[mink[0]] + 0.1f * cos(dalpha * (float)(ka)-dalpha + rotalpha);
         pty = py[mink[0]] + 0.1f * sin(dalpha * (float)(ka)-dalpha + rotalpha);
-        //float celldd = celldist(ptx, pty, mink, delaunay, px, py, npp);
         float celldd = celldist(ptx, pty, mink[k], mink[0], px, py, nc, ncx, ncy, ndx, ndy, larp);
 
         float nstartx =
@@ -1230,25 +1097,9 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
         smooth.y = bordy;
       }
 
-      /*float lambda = interTriangle(px[mink[0]], py[mink[0]], ddx, ddy, startx,
-                                   starty, endx, endy);
-
-      float smoothdist =
-          sqrt((smooth.x - px[mink[0]]) * (smooth.x - px[mink[0]]) +
-               (smooth.y - py[mink[0]]) * (smooth.y - py[mink[0]]));
-      */
-
       float splinedist =
           sqrt((spline.x - px[mink[0]]) * (spline.x - px[mink[0]]) +
                (spline.y - py[mink[0]]) * (spline.y - py[mink[0]]));
-
-      /*if (ismooth == 0) {
-        cv = (1.0f - wsmooth) * (1.0f - sdd / lambda) +
-             wsmooth * (1.0f - sdd / smoothdist);
-      } else {
-        cv = (1.0f - wsmooth) * (1.0f - sdd / smoothdist) +
-             wsmooth * (1.0f - sdd / splinedist);
-      }*/
 
       cv = (1.0f - wsmooth) * (1.0f - sdd / celldd0) +
            wsmooth * (1.0f - sdd / splinedist);
@@ -1292,7 +1143,6 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
       float ddx = (deltalx * cos(-angle) + deltaly * sin(-angle));
       float iddy = (-deltalx * sin(-angle) + deltaly * cos(-angle));
       float ddy = iddy / pow(2.0f, feataniso);
-      //float ddy = iddy * (feataniso * 0.05 + (1.0 - feataniso));
       float dd2 = pow(pow(fabs(ddx), normfeat) + pow(fabs(ddy), normfeat),
                       1.0f / normfeat);
       if (normfeat > 2.0f) {
@@ -1300,14 +1150,12 @@ float procedural_pptbf(float xx, float yy, float tx, float ty, float zoom,
                   (fabs(ddx) > fabs(ddy) ? fabs(ddx) : fabs(ddy)) +
               (1.0f - (normfeat - 2.0f)) * dd2;
       }
-      // float ddist = dd2 / (footprint / sigcos);
       float ddist = (sigcos * dd2) / footprint;
 
       feat = 0.5f * exp(-ddist);
     }
 
     vv += winsum * feat;
-    //vv += winsum;
   }
 
   if (vv < 0.0f) {
@@ -1332,180 +1180,8 @@ __kernel void pptbf(const uint size, float tx, float ty, float zoom,
   float x = (float)j / (float)size;
   float y = (float)i / (float)size;
 
-  // printf("%d %d\n", i, j);
-
-  /*
-  image_g[i * size + j] = procedural_pptbf(x, y,
-                                           0.0,   // tx
-                                           0.0,   // ty
-                                           5,     // zoom
-                                           0.0,   // alpha
-                                           0,     // tiling type
-                                           0.01,  // jitter
-                                           2,     // arity
-                                           0,     // ismooth
-                                           0.5,   // wsmooth
-                                           0.8,   // normblend
-                                           0.01,  // normsig
-                                           0.5,   // larp
-                                           2,     // normfeat
-                                           0,     // winfeatcorrel
-                                           5,     // feataniso
-                                           0.855, // sigcos
-                                           1.0);  // deltaorient
-  */
-
   image_g[i * size + j] =
       procedural_pptbf(x, y, tx, ty, zoom, alpha, tt, jitter, arity, ismooth,
                        wsmooth, normblend, normsig, larp, normfeat, winfeatcorrel,
                        feataniso, sigcos, deltaorient, amp, rx, ry);
-}
-
-/*
-float sigmoid(float x, float t) {
-  return (1.0f/(1.0f + exp(-60.0f*(x - t))));
-}
-
-__kernel void pptbf_smooth_thresh(const uint size, float tx, float ty, float zoom,
-                                  float alpha, int tt, float jitter, float arity, int ismooth,
-                                  float wsmooth, float normblend, float normsig,
-                                  float normfeat, float winfeatcorrel, float feataniso,
-                                  float sigcos, float deltaorient, float amp,
-                                  float rx, float ry, float t,
-                                  __global __write_only float *image_g) {
-
-  int i = get_global_id(0);
-  int j = get_global_id(1);
-
-  float x = (float)j / (float)size;
-  float y = (float)i / (float)size;
-
-  image_g[i * size + j] =
-      procedural_pptbf(x, y, tx, ty, zoom, alpha, tt, jitter, arity, ismooth,
-                       wsmooth, normblend, normsig, normfeat, winfeatcorrel,
-                       feataniso, sigcos, deltaorient, amp, rx, ry);
-
-  // Note: to apply the sigmoid function, the pptbf values should range
-  // between 0 and 1.
-}
-*/
-
-__kernel void equalize(__global const float *uniform,
-                       __global const int *uniform_argsorted,
-                       __global const float *image_flat,
-                       __global const int *image_flat_argsorted,
-                       __global float *image_flat_matched) {
-
-  int i = get_global_id(0);
-  image_flat_matched[i] = uniform[uniform_argsorted[image_flat_argsorted[i]]];
-}
-
-__kernel void thresh(const uint size, __global const float *image_g,
-                     const float t, __global int *image_t_g) {
-
-  int i = get_global_id(0);
-  int j = get_global_id(1);
-
-  if (image_g[i * size + j] > t) {
-    image_t_g[i * size + j] = 255;
-  } else {
-    image_t_g[i * size + j] = 0;
-  }
-}
-
-__kernel void mean_curvature_flow(const uint size,
-                                  __global const float *image_g,
-                                  __global float *image_s_g) {
-
-  // After:
-  // https://gitlab.gnome.org/GNOME/gegl/-/blob/master/operations/common/mean-curvature-blur.c
-  // https://en.wikipedia.org/wiki/Curvature#In_terms_of_a_general_parametrization
-
-  int i = get_global_id(0);
-  int j = get_global_id(1);
-
-  if (i == 0 || i == size - 1 || j == 0 || j == size - 1) {
-    image_s_g[i * size + j] = image_g[i * size + j];
-  } else {
-    float center = image_g[i * size + j];
-    float left = image_g[i * size + (j - 1)];
-    float right = image_g[i * size + (j + 1)];
-    float top = image_g[(i - 1) * size + j];
-    float bottom = image_g[(i + 1) * size + j];
-    float topleft = image_g[(i - 1) * size + (j - 1)];
-    float topright = image_g[(i - 1) * size + (j + 1)];
-    float bottomleft = image_g[(i + 1) * size + (j - 1)];
-    float bottomright = image_g[(i + 1) * size + (j + 1)];
-
-    float dx = right - left;
-    float dy = bottom - top;
-    float magnitude = sqrt(dx * dx + dy * dy);
-
-    image_s_g[i * size + j] = center;
-
-    if (magnitude > 1e-6) {
-      float dx2 = dx * dx;
-      float dy2 = dy * dy;
-      float dxx = right + left - 2.0f * center;
-      float dyy = bottom + top - 2.0f * center;
-      float dxy = 0.25f * (bottomright - topright - bottomleft + topleft);
-      float n = dx2 * dyy + dy2 * dxx - 2.0f * dx * dy * dxy;
-      float d = sqrt(pow(dx2 + dy2, 3.0f));
-      float mean_curvature = n / d;
-
-      image_s_g[i * size + j] += (0.25f * magnitude * mean_curvature);
-      
-      if (image_s_g[i * size + j] < 0.0f)
-        image_s_g[i * size + j] = 0.0f;
-      if (image_s_g[i * size + j] > 1.0f)
-        image_s_g[i * size + j] = 1.0f;
-    }
-  }
-}
-
-__kernel void mean_curvature(const uint size,
-                             __global const float *image_g,
-                             __global float *image_s_g) {
-
-  // After:
-  // https://gitlab.gnome.org/GNOME/gegl/-/blob/master/operations/common/mean-curvature-blur.c
-  // https://en.wikipedia.org/wiki/Curvature#In_terms_of_a_general_parametrization
-
-  int i = get_global_id(0);
-  int j = get_global_id(1);
-
-  if (i == 0 || i == size - 1 || j == 0 || j == size - 1) {
-    //image_s_g[i * size + j] = image_g[i * size + j];
-    image_s_g[i * size + j] = 0.0;
-  } else {
-    float center = image_g[i * size + j];
-    float left = image_g[i * size + (j - 1)];
-    float right = image_g[i * size + (j + 1)];
-    float top = image_g[(i - 1) * size + j];
-    float bottom = image_g[(i + 1) * size + j];
-    float topleft = image_g[(i - 1) * size + (j - 1)];
-    float topright = image_g[(i - 1) * size + (j + 1)];
-    float bottomleft = image_g[(i + 1) * size + (j - 1)];
-    float bottomright = image_g[(i + 1) * size + (j + 1)];
-
-    float dx = right - left;
-    float dy = bottom - top;
-    float magnitude = sqrt(dx * dx + dy * dy);
-
-    //image_s_g[i * size + j] = magnitude;
-
-    if (magnitude > 0.001) {
-      float dx2 = dx * dx;
-      float dy2 = dy * dy;
-      float dxx = right + left - 2.0f * center;
-      float dyy = bottom + top - 2.0f * center;
-      float dxy = 0.25f * (bottomright - topright - bottomleft + topleft);
-      float n = dx2 * dyy + dy2 * dxx - 2.0f * dx * dy * dxy;
-      float d = sqrt(pow(dx2 + dy2, 3.0f));
-      float mean_curvature = n / d;
-      image_s_g[i * size + j] = 0.25f * magnitude * mean_curvature;
-    } else {
-      image_s_g[i * size + j] = 0.0f;
-    }
-  }
 }
