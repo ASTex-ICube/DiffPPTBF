@@ -16,7 +16,7 @@ from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 
-from opencl.pptbf_opencl_smoothing import cl_pptbf
+from opencl.pptbf_opencl import cl_pptbf
 
 def normalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
