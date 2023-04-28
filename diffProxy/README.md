@@ -32,5 +32,5 @@ python optimization.py --input image.png --params params.txt
 `params.txt` is a text file with the C-PPTBF parameters with zoom estimated in Phase #1 to initialize the optimization.   
 When the error decreases during the optimization, the current image will be outputted and the parameters will be written in a txt file log, saved in `results/image/`.
 
-To run the optimization with our pre-trained model, download on [link] `vgg19.pth` for the Sliced Wasserstein Loss and `diffProxy.pkl` the StyleGan2 pre-trained model and put them in current directory.
+To run the optimization with our pre-trained model, download on [[link](https://seafile.unistra.fr/d/4c57922791fc406581f3/)] `vgg19.pth` for the Sliced Wasserstein Loss and `diffProxy.pkl` the StyleGan2 pre-trained model and put them in current directory.
 

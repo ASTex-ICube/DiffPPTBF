@@ -14,7 +14,7 @@ python predict_points.py --input image.png
 
 `--min [number]` and `--max [number]` must be specified if you don't use our pre-trained model but a new model, in this case you have to specify the values displayed during the training of the new model (MIN NUMBER OF POINTS and MAX NUMBER OF POINTS) in order to apply the correct normalization for the number of points parameter.   
 `image.png` is the reconstructed C-PPTBF image for which we want to estimate the C-PPTBF parameters.   
-It will output a txt file with the parameters in this order : `tiling type, jittering, number of feature points, alpha, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp`
+It will output a txt file with the parameters in this order: `tiling type, jittering, number of feature points, alpha, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp`
 
 To run the prediction with our pre-trained model, download on [[link](https://seafile.unistra.fr/d/4c57922791fc406581f3/)] `complete_withPoints.h5` and `alpha.h5` and put them in current directory.
 
@@ -26,9 +26,28 @@ python predict.py --input image.png
 ```
 
 `image.png` is the reconstructed C-PPTBF image for which we want to estimate the C-PPTBF parameters.   
-It will output a txt file with the parameters in this order : `tiling type, jittering, zoom, alpha, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp`
+It will output a txt file with the parameters in this order: `tiling type, jittering, zoom, alpha, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp`
 
 To run the prediction with our pre-trained model, download on [[link](https://seafile.unistra.fr/d/4c57922791fc406581f3/)] `complete_withoutAlpha.h5` and `alpha.h5` and put them in current directory.
 
+### Train a new model 
 
+- To train a new model including all the C-PPTBF parameters with the number of feature points:
 
+```bash 
+python completeEstimation_withPoints.py
+```
+
+- To train a new model including all the C-PPTBF parameters with the zoom parameter:
+
+```bash 
+python completeEstimation_withoutAlpha.py.py
+```
+
+- To train a new model with only the alpha parameter:
+
+```bash 
+python estimationAlpha.py
+```
+
+All these scripts will output .h5 model files to be used for predictions.

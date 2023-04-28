@@ -30,7 +30,7 @@ The complete source code and procedural representations of cellular stochastic s
 
 The source code is split in 4 main directories:
 - [pix2pix](pix2pix) is a fork the Pix2Pix original code, with some changes.
-- [estimation1](estimation1) is our model model for Optimization Phase #1, as described in the paper.
+- [estimation1](estimation1) is our model for Optimization Phase #1, as described in the paper.
 - [estimation2](estimation2) is the code for Optimization Phase #2, containing the implementation of the differentiable C-PPTBF, gradient descent with error metric based on the SWD1D, and Basin Hopping iterations.
 - [diffProxy](diffProxy) is a fork of the DiffProxy original code, with some changes.
 
