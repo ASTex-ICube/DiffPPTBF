@@ -42,3 +42,20 @@ def cl_thresh(im_size, image, t):
 	cl.enqueue_copy(queue, image_t, image_t_g)
 
 	return image_t
+
+
+def cl_mean_curvature_flow(im_size, image, n):
+
+	image_s_g_1 = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=image)
+	image_s_g_2 = cl.Buffer(ctx, mf.READ_WRITE, image.nbytes)
+	image_s_np = np.zeros((im_size, im_size), dtype=np.float32)
+
+	knl_mcf	= prg.mean_curvature_flow
+
+	for k in range(n//2):
+		knl_mcf(queue, image_s_np.shape, None, np.int32(im_size), image_s_g_1, image_s_g_2)
+		knl_mcf(queue, image_s_np.shape, None, np.int32(im_size), image_s_g_2, image_s_g_1)
+
+	cl.enqueue_copy(queue, image_s_np, image_s_g_1)
+
+	return image_s_np

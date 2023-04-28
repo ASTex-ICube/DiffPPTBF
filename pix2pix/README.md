@@ -35,3 +35,13 @@ python test.py --dataroot ./datasets/pptbf/ --name training --model pix2pix --di
 ### Test pre-trained model on a dataset
 
 To test our trained model, download on [[link](https://seafile.unistra.fr/d/4c57922791fc406581f3/)] `latest_net_D.pth` and `latest_net_G.pth`, put them in `/checkpoints/training/` and then run the above test command line. The results will be saved in `/results/training/`.
+
+### Filter an image with Mean Curvature Filter
+
+```bash 
+python filter.py --input image.png --iterations 40
+```
+
+`image.png` is the binary image on which we want to apply the filter.
+`--iterations` is the number of iterations of the filter to apply on the image, 40 by default.
+It will output the filtered image in current directory.

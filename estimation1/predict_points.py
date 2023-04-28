@@ -6,12 +6,12 @@ import json
 import argparse
 parser = argparse.ArgumentParser(description="arguments", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input", required=True, help="input image")
-parser.add_argument("--minPoints", default=24, help="minimum number of points in model, for the normalization")
-parser.add_argument("--maxPoints", default=1459, help="maximum number of points in model, for the normalization")
+parser.add_argument("--minPoints", default=24, help="minimum number of feature points in model, for the normalization")
+parser.add_argument("--maxPoints", default=1459, help="maximum number of feature points in model, for the normalization")
 args = vars(parser.parse_args())
 input = args["input"]
-minPoints = args["minPoints"]
-maxPoints = args["maxPoints"]
+minPoints = int(args["minPoints"])
+maxPoints = int(args["maxPoints"])
 
 model = tf.keras.models.load_model("complete_withPoints.h5")
 model2 = tf.keras.models.load_model("alpha.h5")
