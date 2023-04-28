@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import json
 
 import argparse
 parser = argparse.ArgumentParser(description="arguments", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -39,7 +40,7 @@ def predict(image):
 	delta = float(np.round(renormalize(predictions[8][0][0], -0.1*np.pi, 0.1*np.pi), 6))
 	larp = float(np.round(np.clip(predictions[9][0][0], 0.0, 1.0), 6))
 
-	return tiling, jittering, points, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp
+	return tiling, jittering, points, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp, predictions[0].tolist()
 
 def predictAlpha(image):
 	image = np.array(image, dtype=float)
@@ -56,10 +57,10 @@ def predictAlpha(image):
 image = Image.open(input)
 image = image.resize((200, 200))
 
-tiling, jittering, points, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp = predict(image)
+tiling, jittering, points, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp, tilings = predict(image)
 alpha = predictAlpha(image)
 
-with open("params.txt", "w") as file:
-	file.write(str(tiling) + " " + str(jittering) + " " + str(points) + " " + str(alpha) + 
-	" " + str(normBlend) + " " + str(wsmooth) + " " + str(winfeat) + " " + str(aniso) + 
-	" " + str(sigcos) + " " + str(delta) + " " + str(larp))
+predictions = []
+predictions.append([input[:input.index('_fake_B')], [tiling, jittering, points, alpha,  normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp, tilings]])
+with open('params.json', 'w') as f:
+	json.dump({'predictions': predictions}, f, indent=4)

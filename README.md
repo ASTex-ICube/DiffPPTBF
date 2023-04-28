@@ -39,8 +39,8 @@ The requirements are described within each directory.
 ### Pipeline
 
 1) **Reconstruction of a fake C-PPTBF image**: in the `pix2pix` folder you can find the steps to reconstruct a fake C-PPTBF image, by training and testing your own trained model or testing by using our pre-trained model. It will output images of the reconstruction ending by `_fake_B.png` which will be used in the next steps.  
-2) **Optimization Phase #1**: in the `estimation1` folder you can find the steps to estimate the tiling type and the initial values of continuous parameters by prediction using our pre-trained model. It will output txt files containing all the parameter values to be used in the Phase #2 and for DiffProxy.   
-3) **Optimization Phase #2**:    
+2) **Optimization Phase #1**: in the `estimation1` folder you can find the steps to estimate the tiling type and the initial values of continuous parameters by prediction using our pre-trained model. It will output json or txt files containing all the parameter values to be used in the Phase #2 and for DiffProxy.   
+3) **Optimization Phase #2**: in the `estimation2` folder you can find the steps to perform the stochastic gradient descent for the optimization of the parameters. 
 4) **DiffProxy**: in the `diffProxy` folder you can find the steps to perform the optimziation with DiffProxy using our pre-trained StyleGan2 model and the Sliced Wasserstein Loss. It will output a txt file for the logs of the minimization of the error function and the image matching the input image.
 
 Note that you may have to adapt the paths to input and output files, depending on the configuration of you own project.
