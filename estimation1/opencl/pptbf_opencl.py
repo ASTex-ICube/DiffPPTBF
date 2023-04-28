@@ -13,7 +13,7 @@ import pyopencl as cl
 from PIL import Image
 
 # load the kernel source code
-kernelFile = open("opencl/pptbf_opencl0.cl", "r")
+kernelFile = open("opencl/pptbf_opencl.cl", "r")
 kernelSrc = kernelFile.read()
 
 # Uncomment to choose device at run time
