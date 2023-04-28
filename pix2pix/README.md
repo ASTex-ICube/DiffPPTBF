@@ -42,6 +42,6 @@ To test our trained model, download on [[link](https://seafile.unistra.fr/d/4c57
 python filter.py --input image.png --iterations 40
 ```
 
-`image.png` is the binary image on which we want to apply the filter.
-`--iterations` is the number of iterations of the filter to apply on the image, 40 by default.
+`image.png` is the binary image on which we want to apply the filter.    
+`--iterations` is the number of iterations of the filter to apply on the image, 40 by default.    
 It will output the filtered image in current directory.
