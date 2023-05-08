@@ -19,33 +19,28 @@ import numpy as np
 # each tiling type w.r.t. the zoom
 ttnfp_file = "data/ttnfp.json"
 
-# Natural results with this file
-params_global_file = "predictions_filtered_points_filters40.json"
-dir_in = "natural/pix2pix"
-dir_out = "natural/opti"
+# Dataset of structure maps extracted from natural textures
+dir_in = "../datasets/natural"
+
+# Dataset of structure maps extracted from synthetic textures
+#dir_in = "../datasets/synthetic"
+
+# Output directory
+dir_out = "../datasets/output"
+
+params_global_file = dir_in + "/init_params.json"
 
 # Read JSON global params file
 with open(params_global_file, 'r') as f:
   data = json.load(f)
 
-print("Number of inputs:", len(data['predictions']))
+print("Number of input structure maps:", len(data['predictions']))
 
-# Get tiling types
+# Get tiling types for a minimal given probability in
+# the distribution computed in Optimization Phase #1
 
-# Min 4% for a tiling
-#min_tt_prob = 0.04
-
-# Min 8% for a tiling
-#min_tt_prob = 0.08
-
-# Min 10% for a tiling
+# Min 10% for a tiling type
 min_tt_prob = 0.1
-
-# Min 20% for a tiling
-#min_tt_prob = 0.2
-
-# Min 25% for a tiling
-#min_tt_prob = 0.25
 
 tt_global = []
 for i in range(0, len(data['predictions'])):
@@ -55,10 +50,12 @@ for i in range(0, len(data['predictions'])):
 	tt_global.append(tt.tolist())
 
 tt_global_flat = [item for sublist in tt_global for item in sublist]
-print("Number of tilings to test:", len(tt_global_flat))
+print("Number of tilings to consider:", len(tt_global_flat))
 
-# Loop on input structures
-#for i in range(0, 1):
+# Python command
+python_command = 'python'
+
+# Loop on input structure maps
 for i in range(0, len(data['predictions'])):
 	input_structure_name = data['predictions'][i][0]
 	# Loop on tiling type
@@ -75,7 +72,7 @@ for i in range(0, len(data['predictions'])):
 			print("Already processed")
 			continue
 		
-		command = ("python jax_pptbf.py" +
+		command = (python_command + " jax_pptbf.py"
 		" --input " + data['predictions'][i][0] +
 		" --params " + params_global_file +
 		" --dir_in " + dir_in + " --dir_out " + dir_out +

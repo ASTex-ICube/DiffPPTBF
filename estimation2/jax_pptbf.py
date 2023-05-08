@@ -26,7 +26,7 @@ import optax
 from pptbf_opencl_module import cl_pptbf_0, cl_agauss
 
 # VGG-19 and SWD1D module imports
-from vgg_swd1d import define_model, random_directions, VGG, VGGConcat
+from vgg_swd1d import define_model, random_directions, VGG_SWD1D
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
@@ -118,10 +118,10 @@ input_structure_name = args['input']
 
 # Fake (reconstructed) C-PPTBF image filename
 input_image_name = (dir_in + '/' + input_structure_name +
-'_seg_scrop_pptbf_fake_B.png')
+'_fake_B.png')
 # Input structure map filename
 input_image_t_name = (dir_in + '/' + input_structure_name +
-'_seg_scrop_pptbf_real_A.png')
+'_real_A.png')
 
 # Binary value indicating if the images are saved
 # at each optimization step (1) or not (0)
@@ -196,8 +196,7 @@ if im_size_pptbf_0 % 2:
 	im_size_pptbf_0 += 1
 
 print("tt", tt, "nfp", nfp, "/ zoom", zoom_input, "max",
-zoom_max, "factor", zoom_factor, "zeta", zoom_zeta, "size",
-im_size_pptbf_0)
+zoom_max, "factor", zoom_factor, "zeta", zoom_zeta)
 
 # ----- Initial continuous parameter values -----
 
@@ -246,7 +245,7 @@ if num_zero != num_zero_input:
 	input_image_t_rebin = Image.fromarray(input_image_t_rebin.astype(np.ubyte))
 	input_image_t_rebin = input_image_t_rebin.convert('L')
 	input_image_t_rebin.save(
-		dir_in + '/' + input_structure_name + '_seg_scrop_pptbf_real_A.png'
+		dir_in + '/' + input_structure_name + '_real_A.png'
 	)
 
 print("Number of zero pixels:", num_zero)
@@ -333,7 +332,7 @@ Xd_x = jnp.arange(diff_size, im_size_pptbf_0 - diff_size)
 Xd_y = jnp.arange(diff_size, im_size_pptbf_0 - diff_size)
 Xd_x, Xd_y = jnp.meshgrid(Xd_x, Xd_y)
 Xd_x = jnp.reshape(Xd_x, im_size * im_size)
-Xd_y = jnp.reshape(X_y, im_size * im_size)
+Xd_y = jnp.reshape(Xd_y, im_size * im_size)
 Xd = Xd_y * im_size_pptbf_0 + Xd_x
 
 # Pixel indices for PPTBF computation
@@ -977,9 +976,12 @@ pred_concat_name=None, write_im=0):
 @optax.inject_hyperparams
 def optimizer(learning_rate, eps=1e-8):
   return optax.chain(
-  optax.adam(learning_rate=0.05),
+  optax.adam(learning_rate=learning_rate),
   optax.zero_nans()
 )
+
+# Learning rate
+learning_rate = 0.05
 
 opt = optimizer(learning_rate)
 opt_state = opt.init(params)
@@ -989,7 +991,7 @@ def step(params, opt_state):
 	value, grads = value_and_grad(loss_fn)(params)
 	updates, opt_state = opt.update(grads, opt_state, params)
 	params = optax.apply_updates(params, updates)
-	norm_grad = l2_norm(grads)
+	norm_grad = jnp.linalg.norm(grads)
 	return value, norm_grad, params, opt_state
 
 paramsNoDeform = jnp.array([
@@ -1010,7 +1012,8 @@ def perturb(params):
 	rng = key
 	return paramsNew
 
-# Basin-hopping acceptance test
+# Basin-hopping acceptance test using
+# the Metropolis criterion
 def acceptTest(valueOld, valueNew, T):
 	global rng
 	if valueNew < valueOld:
@@ -1124,7 +1127,8 @@ for i in range(0, gd_steps):
 		'pred_t_min.png', 'pred_min_concat.png',
 		write_images)
 	
-	print(i, value, '/ Min:', min_error, '/ Grad:', norm_grad, '/ LR:', opt_state.hyperparams['learning_rate'],
+	print(i, value, '/ Min:', min_error, '/ Grad:', norm_grad, '/ LR:',
+	opt_state.hyperparams['learning_rate'],
 	'/ {:.4f} s'.format(end-start), '/ {:.4f} s'.format(global_time))
 	
 	# Exponential moving average update
@@ -1224,7 +1228,7 @@ for k in range(bh_steps):
 		print(k, "Acceptance test: Accepted")
 		params = perturb(paramsBestNew)
 	else:
-		print(k, "Acceptance test: Refused")
+		print(k, "Acceptance test: Rejected")
 		params = perturb(paramsBest)
 
 for i in range(0, len(params_global_dict)):
