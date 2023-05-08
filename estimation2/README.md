@@ -23,8 +23,9 @@ Notes:
 
 - JAX compiles code at execution time, and then caches this
 code for efficient execution on the GPU (see
-[Just In Time Compilation with JAX](https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html)), this is why the first execution takes a longer
-time thatn the subsequent executions.
+[Just In Time Compilation with JAX](https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html)). The compiled code is not cached on-disk (which is
+actually not supported by JAX, as far as we know) and is re-compiled
+at each execution of the code.
 
 - Sometimes, the best estimation result is not given by the tiling type
 with the highest score in the output of Optimization Phase #1. This is
