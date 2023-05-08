@@ -32,6 +32,7 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 # Memory allocation, see the following page for details:
 # https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
+os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION'] = '0.7'
 os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'true'
 #os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
 #os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = 'platform'
