@@ -70,6 +70,6 @@ tiling, jittering, points, normBlend, wsmooth, winfeat, aniso, sigcos, delta, la
 alpha = predictAlpha(image)
 
 predictions = []
-predictions.append([input[:input.rindex('.')], [tiling, jittering, points, alpha,  normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp, tilings]])
+predictions.append([input[:input.rindex('.')], [tiling, jittering, alpha, points, normBlend, wsmooth, winfeat, aniso, sigcos, delta, larp, tilings]])
 with open('params.json', 'w') as f:
 	json.dump({'predictions': predictions}, f, indent=4)
