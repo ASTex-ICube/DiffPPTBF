@@ -9,6 +9,18 @@ For the installation of JAX, please follow the instructions on the
 pip install -r requirements.txt
 ```
 
+#### Update (October 28, 2023)
+
+Command lines to install jax 0.4.19 with CUDA 11 in an Anaconda env with pip:
+
+```bash 
+conda create --name jax
+conda activate jax
+conda install python=3.10
+python -m pip install jax==0.4.19 https://storage.googleapis.com/jax-releases/cuda11/jaxlib-0.4.19+cuda11.cudnn86-cp310-cp310-manylinux2014_x86_64.whl
+python -m pip install h5py requests tdqm optax==0.1.7 pyopencl==2023.1.4 flax==0.7.5 nvidia-cuda-runtime-cu11==11.8.89 nvidia-cudnn-cu11==8.6.0.163 nvidia-cufft-cu11==10.9.0.58 nvidia-cusolver-cu11==11.4.1.48 nvidia-cuda-cupti-cu11==11.8.87 nvidia-cublas-cu11==11.11.3.6 nvidia-cuda-nvcc-cu11==11.8.89 nvidia-cusparse-cu11==11.7.5.86 nvidia-nccl-cu11==2.16.2 optax pyopencl 
+```
+
 ### Estimate C-PPTBF parameters from a set of input structure maps
 
 The datasets used to produce the results of our paper is available
