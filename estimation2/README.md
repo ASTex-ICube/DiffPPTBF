@@ -11,7 +11,7 @@ pip install -r requirements.txt
 
 #### Update (October 28, 2023)
 
-Command lines to install jax 0.4.19 with CUDA 11 in an Anaconda env with pip:
+Command lines to install JAX 0.4.19 with CUDA 11 and CUDNN 8.6 in an Anaconda env with pip:
 
 ```bash 
 conda create --name jax
