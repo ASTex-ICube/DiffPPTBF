@@ -24,7 +24,7 @@ You can get the paper (preprint) following [this link](https://seafile.unistra.f
 - larp: Anisotropy of cellular window, interpolation factor between rectangular and Voronoi cells &lambda;
 --->
 
-The complete source code and procedural representations of cellular stochastic structures will is made progressively available, as of the beginning of April 2023.
+The complete source code and procedural representations of cellular stochastic structures will be made progressively available, as of the beginning of April 2023.
 
 ### Source code organization and requirements
 
